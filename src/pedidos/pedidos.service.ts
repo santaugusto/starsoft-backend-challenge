@@ -26,10 +26,14 @@ export class PedidosService {
         });
         const savedPedido = await this.pedidosRepository.save(pedido);
 
-        // Enviar evento Kafka de criação (ver passo 3)
-        await this.kafkaService.emitirEvento('pedido.criado', savedPedido);
+        await this.kafkaService.emitirEvento('order_created', {
+            id_pedido: savedPedido.id_pedido,
+            status: savedPedido.status,
+            itens: savedPedido.itens,
+            createdAt: new Date().toISOString()
+        });
 
-        // Indexar no Elasticsearch (ver passo 4)
+
         await this.searchService.indexarPedido(savedPedido);
 
         return savedPedido;
@@ -47,22 +51,30 @@ export class PedidosService {
         const pedido = await this.findOne(id);
         if (!pedido) throw new NotFoundException(`Pedido com ID ${id} não encontrado`);
 
-        if (data.status) pedido.status = data.status;
+        let statusChanged = false;
+
+        if (data.status && data.status !== pedido.status) {
+            pedido.status = data.status;
+            statusChanged = true;
+        }
 
         if (data.itens) {
-            // Remover itens antigos e criar novos
             pedido.itens = data.itens.map(item => this.itensRepository.create(item));
         }
 
         const updatedPedido = await this.pedidosRepository.save(pedido);
 
-        // Enviar evento Kafka de criação (ver passo 3)
-        await this.kafkaService.emitirEvento('pedido.criado', updatedPedido);
+        if (statusChanged) {
+            await this.kafkaService.emitirEvento('order_status_updated', {
+                id: updatedPedido.id_pedido,
+                status: updatedPedido.status,
+                updatedAt: new Date().toISOString()
+            });
+        }
 
-        // Indexar no Elasticsearch (ver passo 4)
         await this.searchService.indexarPedido(updatedPedido);
-
         return updatedPedido;
+
     }
 
     async remove(id: number): Promise<void> {
