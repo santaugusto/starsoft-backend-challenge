@@ -24,7 +24,7 @@ import { MyElasticsearchModule } from './elasticsearch/elasticsearch.module';
         password: config.get('POSTGRES_PASSWORD'),
         database: config.get('POSTGRES_DB'),
         autoLoadEntities: true,
-        synchronize: true, 
+        synchronize: true,
       }),
     }),
 
@@ -34,4 +34,4 @@ import { MyElasticsearchModule } from './elasticsearch/elasticsearch.module';
     ItensModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

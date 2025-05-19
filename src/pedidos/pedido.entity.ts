@@ -16,7 +16,7 @@ export class Pedido {
   @Column({
     type: 'enum',
     enum: ['pendente', 'processando', 'enviado', 'entregue', 'cancelado'],
-    default: 'pendente'
+    default: 'pendente',
   })
   status: string;
 

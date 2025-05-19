@@ -18,13 +18,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
             consumer: {
               groupId: config.get<string>('KAFKA_GROUP_ID', 'pedido-consumer'),
             },
-             retryAttempts: 10,
-            retryDelay: 5000, 
+            retryAttempts: 10,
+            retryDelay: 5000,
           },
         }),
       },
     ]),
   ],
-  exports: [ClientsModule], 
+  exports: [ClientsModule],
 })
 export class KafkaModule {}
