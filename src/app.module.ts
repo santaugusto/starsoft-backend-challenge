@@ -9,12 +9,10 @@ import { MyElasticsearchModule } from './elasticsearch/elasticsearch.module';
 
 @Module({
   imports: [
-    // Carregar variáveis de ambiente globalmente
     ConfigModule.forRoot({
       isGlobal: true,
     }),
 
-    // Conexão com PostgreSQL via TypeORM
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -26,7 +24,7 @@ import { MyElasticsearchModule } from './elasticsearch/elasticsearch.module';
         password: config.get('POSTGRES_PASSWORD'),
         database: config.get('POSTGRES_DB'),
         autoLoadEntities: true,
-        synchronize: true, // desative em produção
+        synchronize: true, 
       }),
     }),
 

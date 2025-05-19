@@ -24,7 +24,7 @@ export class PedidosKafkaService implements OnModuleInit, OnModuleDestroy {
     this.admin = kafka.admin();
     await this.admin.connect();
 
-    // Criar o tópico se ele ainda não existir
+   
     await this.criarTopicoSeNaoExistir('pedidos', 3);
   }
 
@@ -52,8 +52,26 @@ export class PedidosKafkaService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async emitirEvento(topic: string, payload: any) {
-    this.logger.log(`Emitindo evento para o tópico '${topic}' com payload: ${JSON.stringify(payload)}`);
-    await this.kafkaClient.emit(topic, payload).toPromise();
+async emitirEvento(topic: string, payload: unknown, tentativas = 5, delayMs = 1000): Promise<void> {
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      this.logger.log(`Tentando emitir evento (tentativa ${i + 1}) para o tópico '${topic}'`);
+      await this.kafkaClient.emit(topic, payload).toPromise();
+      this.logger.log(`Evento emitido com sucesso para o tópico '${topic}'`);
+      return; 
+    } catch (error: unknown) {
+      let message = 'Erro desconhecido';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      this.logger.error(`Erro ao emitir evento para '${topic}': ${message}`);
+      if (i < tentativas - 1) {
+        await new Promise<void>(resolve => setTimeout(resolve, delayMs)); 
+      } else {
+        this.logger.error(`Falha definitiva ao emitir evento para '${topic}' após ${tentativas} tentativas.`);
+      }
+    }
   }
+}
+
 }
