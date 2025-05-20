@@ -8,10 +8,7 @@ import {
 import { ClientKafka } from '@nestjs/microservices';
 import { Kafka, Admin } from 'kafkajs';
 import { ConfigService } from '@nestjs/config';
-
-interface KafkaPayload {
-  message: string;
-}
+import { KafkaPayload } from './kafka-payloads.interface';
 
 @Injectable()
 export class PedidosKafkaService implements OnModuleInit, OnModuleDestroy {
@@ -74,9 +71,9 @@ export class PedidosKafkaService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async emitirEvento(
+  async emitirEvento<T>(
     topic: string,
-    payload: KafkaPayload,
+    payload: T,
     tentativas = 5,
     delayMs = 1000,
   ): Promise<void> {

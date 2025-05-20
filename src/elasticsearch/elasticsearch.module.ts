@@ -21,4 +21,4 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   ],
   exports: [ElasticsearchModule],
 })
-export class MyElasticsearchModule { }
+export class MyElasticsearchModule {}
