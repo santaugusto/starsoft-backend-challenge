@@ -7,6 +7,10 @@ import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido-dto';
 import { PedidosKafkaService } from './kafka/pedidos.kafka';
 import { PedidosSearchService } from './pedidos.search.service';
+import {
+  OrderCreatedPayload,
+  OrderStatusUpdatedPayload,
+} from './kafka/kafka-payloads.interface';
 
 @Injectable()
 export class PedidosService {
@@ -26,7 +30,7 @@ export class PedidosService {
     });
     const savedPedido = await this.pedidosRepository.save(pedido);
 
-    await this.kafkaService.emitirEvento('order_created', {
+    await this.kafkaService.emitirEvento<OrderCreatedPayload>('order_created', {
       id_pedido: savedPedido.id_pedido,
       status: savedPedido.status,
       itens: savedPedido.itens,
@@ -67,11 +71,14 @@ export class PedidosService {
     const updatedPedido = await this.pedidosRepository.save(pedido);
 
     if (statusChanged) {
-      await this.kafkaService.emitirEvento('order_status_updated', {
-        id: updatedPedido.id_pedido,
-        status: updatedPedido.status,
-        updatedAt: new Date().toISOString(),
-      });
+      await this.kafkaService.emitirEvento<OrderStatusUpdatedPayload>(
+        'order_status_updated',
+        {
+          id_pedido: updatedPedido.id_pedido,
+          status: updatedPedido.status,
+          updatedAt: new Date().toISOString(),
+        },
+      );
     }
 
     await this.searchService.indexarPedido(updatedPedido);
