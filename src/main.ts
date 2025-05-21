@@ -2,9 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
+import { PrometheusInterceptor } from './common/interceptors/prometheus.interceptor';
+import { WinstonLoggerService } from './common/logger/winston-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+ 
+  app.useLogger(app.get(WinstonLoggerService));
 
   app.enableCors({
     origin: '*',
